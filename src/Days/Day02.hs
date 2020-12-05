@@ -1,19 +1,15 @@
 module Days.Day02 (runDay) where
 
 {- ORMOLU_DISABLE -}
-import Data.List
-import Data.Map.Strict (Map)
+
 import qualified Data.Map.Strict as Map
-import Data.Maybe
-import Data.Set (Set)
-import qualified Data.Set as Set
-import Data.Vector (Vector)
-import qualified Data.Vector as Vec
 import qualified Util.Util as U
+import Util.Parsers
+
 
 import qualified Program.RunDay as R (runDay)
 import Data.Attoparsec.Text
-import Data.Void
+import Data.Bits (Bits(xor))
 {- ORMOLU_ENABLE -}
 
 runDay :: Bool -> String -> IO ()
@@ -21,19 +17,43 @@ runDay = R.runDay inputParser partA partB
 
 ------------ PARSER ------------
 inputParser :: Parser Input
-inputParser = error "Not implemented yet!"
+inputParser = ruleAndPassword `sepBy` endOfLine
+    where 
+     ruleAndPassword = do
+        (min,max) <- decimal `around` char '-'
+        skipSpace
+        givenLetter <- letter
+        string ": "
+        password <- many1 letter
+        return (PasswordRule{..},password)
 
 ------------ TYPES ------------
-type Input = Void
+type Password = String
 
-type OutputA = Void
+data PasswordRule = PasswordRule
+ {
+     min::Int,
+     max::Int,
+     givenLetter::Char
+ } deriving (Show)
 
-type OutputB = Void
+type Input = [(PasswordRule,Password)]
+
+type OutputA = Int
+
+type OutputB = Int
 
 ------------ PART A ------------
 partA :: Input -> OutputA
-partA = error "Not implemented yet!"
+partA = length . filter scorePassword
+    where
+        scorePassword (PasswordRule {..},password) = 
+            let countOfGiven = Map.findWithDefault 0 givenLetter (U.freq password)
+             in countOfGiven >= min && countOfGiven <=max
 
 ------------ PART B ------------
 partB :: Input -> OutputB
-partB = error "Not implemented yet!"
+partB = length . filter scorePassword
+    where 
+        scorePassword (PasswordRule{..},password) = 
+            (password !! (min-1) == givenLetter) `xor` (password !! (max -1) == givenLetter)
