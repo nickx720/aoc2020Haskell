@@ -21,19 +21,34 @@ runDay = R.runDay inputParser partA partB
 
 ------------ PARSER ------------
 inputParser :: Parser Input
-inputParser = error "Not implemented yet!"
+inputParser = (many1 letter) `sepBy` endOfLine
 
 ------------ TYPES ------------
-type Input = Void
+type Input = [String]
 
-type OutputA = Void
+type OutputA = Int
 
-type OutputB = Void
+type OutputB = Int
 
 ------------ PART A ------------
+codeToSeatId:: String -> Int
+codeToSeatId = 
+    foldl'
+     (\acc x -> 
+         acc * 2
+           + (if x `elem` ("BR"::String) then 1 else 0)
+     )
+     0
 partA :: Input -> OutputA
-partA = error "Not implemented yet!"
+partA = maximum . fmap codeToSeatId
 
 ------------ PART B ------------
 partB :: Input -> OutputB
-partB = error "Not implemented yet!"
+partB = findSeat . sort . fmap codeToSeatId
+    where
+     findSeat sids = 
+         head $
+            [
+                y | y <- [minimum sids .. maximum sids],
+                y `notElem` sids
+            ]
