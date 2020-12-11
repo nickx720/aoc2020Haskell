@@ -13,7 +13,9 @@ import qualified Util.Util as U
 
 import qualified Program.RunDay as R (runDay)
 import Data.Attoparsec.Text
-import Data.Void
+import Data.Functor
+import Control.Applicative
+import Util.Parsers (around)
 {- ORMOLU_ENABLE -}
 
 runDay :: Bool -> String -> IO ()
@@ -21,19 +23,60 @@ runDay = R.runDay inputParser partA partB
 
 ------------ PARSER ------------
 inputParser :: Parser Input
-inputParser = error "Not implemented yet!"
+inputParser = Map.fromList <$> rule `sepBy` endOfLine
+    where
+        color = do
+            (adj,col) <- many1 letter `around` space
+            return (adj ++ " " ++ col)
+        rule = do
+            container <- color
+            string " bags contain "
+            rules <-
+                choice
+                  [ string "no other bags" $> [],
+                  bag `sepBy1` (string ", ")
+                  ]
+            char '.'
+            return (container,rules)
+        bag = do
+            quant <- decimal
+            space
+            col <- color
+            space
+            string "bags" <|> string "bag"
+            return (quant,col)
 
 ------------ TYPES ------------
-type Input = Void
+type Color = String
 
-type OutputA = Void
+type BagRules = Map Color ([(Int,Color)])
 
-type OutputB = Void
+type Input = BagRules
+
+type OutputA = Int
+
+type OutputB = Int
 
 ------------ PART A ------------
+validContainers :: BagRules -> Color -> [Color]
+validContainers rs col = case validImmediateContainers col of
+    [] -> [col]
+    ls -> nub . (col :) . concat . fmap (validContainers rs) $ ls
+    where
+        validImmediateContainers col = 
+            Map.keys . Map.filter ((col `elem`) . (fmap snd)) $ rs
 partA :: Input -> OutputA
-partA = error "Not implemented yet!"
+partA input = 
+    length
+        . (delete "shiny gold")
+        $ validContainers input "shiny gold"
 
 ------------ PART B ------------
+totalBags :: BagRules -> Color -> Int
+totalBags rs col =
+    sum
+    . fmap (\(q,c)-> q+(q * totalBags rs c))
+    $ rs Map.! col
+
 partB :: Input -> OutputB
-partB = error "Not implemented yet!"
+partB input = totalBags input "shiny gold"
