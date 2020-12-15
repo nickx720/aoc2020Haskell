@@ -40,3 +40,12 @@ chunksOf n ls
   | n <= 0 = error "Cannot split into chunks of negative length."
   | length ls < n = [ls]
   | otherwise = (take n ls) : (chunksOf n (drop n ls))
+
+chunksByPredicate :: (a-> Bool) -> [a] -> [[a]]
+chunksByPredicate p ls
+  | null ls = []
+  | otherwise = 
+    let (prefix,rest) = span p ls
+      in if null prefix
+            then (chunksByPredicate p $ dropWhile (not . p) rest)
+            else prefix : (chunksByPredicate p $ dropWhile (not . p) rest) 
