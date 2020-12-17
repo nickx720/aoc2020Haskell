@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c048de24b751a122b2e914acaa90bbd5e796a925ef6214118e4891baf487f88f
+-- hash: 212f75cec6b89f50cbd2362c319370c5af8f5af6050f124b8b138b07e9a81142
 
 name:           aoc-template
 version:        0.1.0.0
@@ -52,6 +52,7 @@ library
       Days.Day24
       Days.Day25
       Program.RunDay
+      Util.Pair
       Util.Parsers
       Util.Util
   other-modules:
